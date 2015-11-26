@@ -133,6 +133,7 @@
   <ItemGroup>
     <ClInclude Include="ece250.h" />
     <ClInclude Include="Exception.h" />
+    <ClInclude Include="Header.h" />
     <ClInclude Include="Tester.h" />
     <ClInclude Include="Weighted_graph.h" />
     <ClInclude Include="Weighted_graph_tester.h" />
