@@ -53,29 +53,42 @@ private:
 	//first vector holds all vertices
 	//map holds the adjacent vertex and the weight
 	vector<map<int, double>> vertices;
+	
+	//vector shows which vertices have been visited
+	vector<bool> visited;
+
+	//this exists because changing mst_weight is not allowed in a const function. Thus we store them all
+	//vector<double> minimum_weights;
 
 	//total number of edges in graph
 	int edge_number;
 
+	
 	//total number of nodes in graph. Used to compare to the number of nodes in MST to determine if graph is connected
 	int node_number;
 
 	//total number of nodes in MST. Used to compare with node_number
-	int spanning_tree_node_number;
+	int mst_node_number;
+
 
 	void check_valid_vertices(const int&, const int&) const;
 
+
 public:
+
+
 	Weighted_graph(int = 50);
 	~Weighted_graph();
 
 	int degree(int) const;
 	int edge_count() const;
 	double adjacent(int, int) const;
-	double minimum_spanning_tree(int) const;
-	bool is_connected() const;
+	double minimum_spanning_tree(int) /*const*/;
+	bool is_connected() /*const*/;
 
 	void insert(int, int, double);
+
+	
 
 	// Friends
 
@@ -86,13 +99,14 @@ public:
 const double Weighted_graph::INF = std::numeric_limits<double>::infinity();
 
 //set edge number and first vector with vertices
-Weighted_graph::Weighted_graph(int i) : edge_number(0), node_number(i), spanning_tree_node_number(0)
+Weighted_graph::Weighted_graph(int i) : edge_number(0), node_number(0), mst_node_number(0)
 {
 	for (int k = 0; k < i; k++)
 	{
 		vertices.push_back(map<int, double>());
+		visited.push_back(false);
 	}
-	node_number = i;
+
 }
 
 Weighted_graph::~Weighted_graph()
@@ -132,16 +146,110 @@ double Weighted_graph::adjacent(int v1, int v2) const
 }
 
 //return size of the MST connected to vertex
-double Weighted_graph::minimum_spanning_tree(int v) const
+//to find MST, check first vertex. Then examine all adjacent vertices and now examine only the adjacent vertices that haven'y been visited. 
+//Select the vertex with the lowest weight, add to weight number, mark the other vertex. 
+//Repeat but now check both vertices
+double  Weighted_graph::minimum_spanning_tree(int v) /*const*/
 {
+	if (v > vertices.size() - 1 || v < 0) {
+		throw illegal_argument();
+	}
 
+	mst_node_number = 0;
+
+	//stores the vertices that are currently in the MST. We will examine each of these vertices adjacent vertices.
+	vector<int> connected_vertices;
+	connected_vertices.push_back(v);
+
+	visited[v] = true;
+
+	//stores the vertex that contains the min weight among all the vertices in connected_vertices
+	int vertex_containing_min = -1;
+
+	//stores the minimum weight among the non-checked adjacent vertices
+	double min = INF;
+
+	bool test_if_we_can_push_another_vertex_to_connected_vertices = false;
+
+	//the weight of the MST
+	double mst_weight;
+
+	for (int connected = 0; connected < connected_vertices.size(); connected++)
+	{
+		auto check_examinedVertex = connected_vertices[connected];
+		//iterate through adjacent vertices
+		for (auto adjacent : vertices[connected_vertices[connected]])
+		{
+			auto check1_adjacentVertex = adjacent.first;
+			//operate only with vertices that haven't been marked
+			if (visited[adjacent.first] == false)
+			{
+				test_if_we_can_push_another_vertex_to_connected_vertices = true;
+				//among the non-visited vertices, find the one with the lightest weight by interating through them
+				if (adjacent.second < min)
+				{
+					min = adjacent.second;
+					vertex_containing_min = adjacent.first;
+				}
+			}
+		}
+
+		//add to mst_weight and changed visited status only after all vertices in connected_vertices are examined
+		if (connected == connected_vertices.size() - 1)
+		{
+			//no new vertex to ad to MST, thus, MST is completed
+			if (test_if_we_can_push_another_vertex_to_connected_vertices == false)
+			{
+				//upon returning weight, set the visited matrix to false values, ready to be used next time
+				//set mst_weight back to 0
+				for (auto& i : visited) { i = false; }
+				return mst_weight;
+			}
+			else
+			{
+				visited[vertex_containing_min] = true;
+				mst_weight += min;
+				//one more vertex added to our current vertex
+				connected_vertices.push_back(vertex_containing_min);
+				connected= -1; //to ensure we start with the first vertex in connected_vertex again
+				vertex_containing_min = -1;
+				min = INF; test_if_we_can_push_another_vertex_to_connected_vertices = false;
+				//this one is used in is_Connected
+				mst_node_number++;
+			
+			}
+		}
+
+
+	}
 }
 
-//
-////determines if the graph is connected
-//bool Weighted_graph::is_connected() const 
-//{
-//}
+
+//determines if the graph is connected. True if same number of nodes in graph as in MST
+bool Weighted_graph::is_connected() /*const*/ 
+{
+	node_number = 0;
+
+	//to use with minimum_spanning_tree
+	int vertex_has_edge;
+	
+	//sets node_number
+	for (int i = 0; i < vertices.size(); i++)
+	{
+		if (vertices[i].size() >= 1)
+		{
+			vertex_has_edge = i;
+			node_number++;
+		}
+	}
+
+
+	//sets mst_node_number
+	auto m = minimum_spanning_tree(vertex_has_edge);
+
+	//return mst_node_number;
+	return (node_number == mst_node_number+1) ? true : false;
+}
 
 //insert an edge incident to two vertices and specify its weight
 //throws exception for invalid vertex1 and vertex2

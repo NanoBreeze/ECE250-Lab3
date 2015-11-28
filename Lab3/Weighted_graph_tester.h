@@ -254,7 +254,7 @@ void Weighted_graph_tester::process() {
 		}
 	}
 	else if (command == "cout") {
-		std::cout << *object << std::endl;
+		std::cout << /**object */ "MUHAHAHAHAHA" << std::endl;
 	}
 	else {
 		std::cout << command << "Command not found." << std::endl;
