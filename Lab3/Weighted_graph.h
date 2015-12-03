@@ -1,4 +1,4 @@
-#pragma once
+//#pragma once
 	//ref class Weighted_graph
 	//{
 	//public:
@@ -28,15 +28,15 @@
 *
 * The following is a list of uWaterloo User IDs of those students
 * who helped me with this project (describe their help; e.g., debugging):
-*    -
+*    - mg2kim 
 *****************************************/
 
-//#ifndef WEIGHTED_GRAPH_H
-//#define WEIGHTED_GRAPH_H
-//
-//#ifndef nullptr
-//#define nullptr 0
-//#endif
+#ifndef WEIGHTED_GRAPH_H
+#define WEIGHTED_GRAPH_H
+
+#ifndef nullptr
+#define nullptr 0
+#endif
 
 #include <iostream>
 #include <limits>
@@ -52,7 +52,7 @@ private:
 
 	//first vector holds all vertices
 	//map holds the adjacent vertex and the weight
-	vector<map<int, double>> vertices;
+	vector<map<int, double> > vertices;
 	
 	//vector shows which vertices have been visited
 	vector<bool> visited;
@@ -83,8 +83,8 @@ public:
 	int degree(int) const;
 	int edge_count() const;
 	double adjacent(int, int) const;
-	double minimum_spanning_tree(int) /*const*/;
-	bool is_connected() /*const*/;
+	double minimum_spanning_tree(int) ;
+	bool is_connected() ;
 
 	void insert(int, int, double);
 
@@ -99,7 +99,7 @@ public:
 const double Weighted_graph::INF = std::numeric_limits<double>::infinity();
 
 //set edge number and first vector with vertices
-Weighted_graph::Weighted_graph(int i) : edge_number(0), node_number(0), mst_node_number(0)
+Weighted_graph::Weighted_graph(int i) : edge_number(0), node_number(i), mst_node_number(0)
 {
 	for (int k = 0; k < i; k++)
 	{
@@ -149,7 +149,7 @@ double Weighted_graph::adjacent(int v1, int v2) const
 //to find MST, check first vertex. Then examine all adjacent vertices and now examine only the adjacent vertices that haven'y been visited. 
 //Select the vertex with the lowest weight, add to weight number, mark the other vertex. 
 //Repeat but now check both vertices
-double  Weighted_graph::minimum_spanning_tree(int v) /*const*/
+double  Weighted_graph::minimum_spanning_tree(int v) 
 {
 	if (v > vertices.size() - 1 || v < 0) {
 		throw illegal_argument();
@@ -172,24 +172,24 @@ double  Weighted_graph::minimum_spanning_tree(int v) /*const*/
 	bool test_if_we_can_push_another_vertex_to_connected_vertices = false;
 
 	//the weight of the MST
-	double mst_weight;
+	double mst_weight = 0;
 
 	for (int connected = 0; connected < connected_vertices.size(); connected++)
 	{
-		auto check_examinedVertex = connected_vertices[connected];
+		int check_examinedVertex = connected_vertices[connected];
 		//iterate through adjacent vertices
-		for (auto adjacent : vertices[connected_vertices[connected]])
+		for (map<int, double>::iterator adjacent = vertices[connected_vertices[connected]].begin(); adjacent != vertices[connected_vertices[connected]].end(); adjacent++)
 		{
-			auto check1_adjacentVertex = adjacent.first;
+			int check1_adjacentVertex = adjacent->first;
 			//operate only with vertices that haven't been marked
-			if (visited[adjacent.first] == false)
+			if (visited[adjacent->first] == false)
 			{
 				test_if_we_can_push_another_vertex_to_connected_vertices = true;
 				//among the non-visited vertices, find the one with the lightest weight by interating through them
-				if (adjacent.second < min)
+				if (adjacent->second < min)
 				{
-					min = adjacent.second;
-					vertex_containing_min = adjacent.first;
+					min = adjacent->second;
+					vertex_containing_min = adjacent->first;
 				}
 			}
 		}
@@ -202,7 +202,7 @@ double  Weighted_graph::minimum_spanning_tree(int v) /*const*/
 			{
 				//upon returning weight, set the visited matrix to false values, ready to be used next time
 				//set mst_weight back to 0
-				for (auto& i : visited) { i = false; }
+				for (int i = 0; i < visited.size(); i++) { visited[i] = false; }
 				return mst_weight;
 			}
 			else
@@ -226,26 +226,26 @@ double  Weighted_graph::minimum_spanning_tree(int v) /*const*/
 
 
 //determines if the graph is connected. True if same number of nodes in graph as in MST
-bool Weighted_graph::is_connected() /*const*/ 
+bool Weighted_graph::is_connected() 
 {
-	node_number = 0;
+	//node_number = 0;
 
-	//to use with minimum_spanning_tree
-	int vertex_has_edge;
-	
-	//sets node_number
-	for (int i = 0; i < vertices.size(); i++)
-	{
-		if (vertices[i].size() >= 1)
-		{
-			vertex_has_edge = i;
-			node_number++;
-		}
-	}
+	////to use with minimum_spanning_tree
+	//int vertex_has_edge=0;
+	//
+	////sets node_number
+	//for (int i = 0; i < vertices.size(); i++)
+	//{
+	//	if (vertices[i].size() >= 1)
+	//	{
+	//		vertex_has_edge = i;
+	//		node_number++;
+	//	}
+	//}
 
 
 	//sets mst_node_number
-	auto m = minimum_spanning_tree(vertex_has_edge);
+	double m = minimum_spanning_tree(0);
 
 	//return mst_node_number;
 	return (node_number == mst_node_number+1) ? true : false;
@@ -281,9 +281,12 @@ void Weighted_graph::insert(int v1, int v2, double weight)
 	}
 	else
 	{
+		if (vertices[v1][v2] == 0 || vertices[v2][v1] == 0)
+		{
+			edge_number++;
+		}
 			vertices[v1][v2] = weight;
 			vertices[v2][v1] = weight;
-			edge_number++;
 	}
 }
 
@@ -305,6 +308,6 @@ void Weighted_graph::check_valid_vertices(const int& v1, const int& v2) const
 	}
 
 }
-//
-//
-//#endif
+
+
+#endif
